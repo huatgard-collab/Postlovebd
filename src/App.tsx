@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { Navbar, NavPage } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { GlobalSearchModal } from './components/GlobalSearchModal';
+import { PostcardUseCountdownModal } from './components/PostcardUseCountdownModal';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -97,10 +98,22 @@ export default function App() {
     });
   };
 
+  // 5-second countdown sponsor flow state
+  const [countdownTemplate, setCountdownTemplate] = useState<PostcardTemplate | null>(null);
+
   // Action handlers
   const handleSelectPostcardForGenerator = (template: PostcardTemplate) => {
+    setCountdownTemplate(template);
+  };
+
+  const handleCountdownComplete = (template: PostcardTemplate) => {
     setSelectedTemplate(template);
+    setCountdownTemplate(null);
     navigateTo('generator');
+  };
+
+  const handleCountdownClose = () => {
+    setCountdownTemplate(null);
   };
 
   const handleSelectQuoteForGenerator = (quote: RomanticQuote) => {
@@ -211,6 +224,14 @@ export default function App() {
         onSelectQuote={handleSelectQuoteForGenerator}
         onSelectCategory={handleSelectCategory}
         onSelectGallery={handleSelectGalleryItem}
+      />
+
+      {/* 5-Second Postcard Use Countdown Modal */}
+      <PostcardUseCountdownModal
+        template={countdownTemplate}
+        isOpen={!!countdownTemplate}
+        onComplete={handleCountdownComplete}
+        onClose={handleCountdownClose}
       />
     </div>
   );
