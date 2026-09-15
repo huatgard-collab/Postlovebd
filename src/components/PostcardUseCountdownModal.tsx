@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PostcardTemplate } from '../types';
 import { SPONSOR_URL } from '../config/siteConfig';
 import { Sparkles, ExternalLink, X, ArrowRight } from 'lucide-react';
@@ -18,35 +18,37 @@ export const PostcardUseCountdownModal: React.FC<PostcardUseCountdownModalProps>
 }) => {
   const [countdown, setCountdown] = useState<number>(5);
   const [newTabBlocked, setNewTabBlocked] = useState<boolean>(false);
+  const completedRef = useRef<boolean>(false);
 
+  // Reset completion guard and countdown when modal opens
   useEffect(() => {
-    if (!isOpen || !template) {
+    if (isOpen) {
+      completedRef.current = false;
       setCountdown(5);
       setNewTabBlocked(false);
-      return;
-    }
 
-    // Attempt to open sponsor link in a new tab immediately upon opening
-    try {
-      const openedWindow = window.open(SPONSOR_URL, '_blank', 'noopener,noreferrer');
-      if (!openedWindow || openedWindow.closed || typeof openedWindow.closed === 'undefined') {
+      // Attempt to open sponsor link in a new tab immediately upon opening
+      try {
+        const openedWindow = window.open(SPONSOR_URL, '_blank', 'noopener,noreferrer');
+        if (!openedWindow || openedWindow.closed || typeof openedWindow.closed === 'undefined') {
+          setNewTabBlocked(true);
+        } else {
+          setNewTabBlocked(false);
+        }
+      } catch {
         setNewTabBlocked(true);
-      } else {
-        setNewTabBlocked(false);
       }
-    } catch {
-      setNewTabBlocked(true);
     }
+  }, [isOpen]);
 
-    setCountdown(5);
+  // Interval timer for 5-second countdown purely updating countdown state
+  useEffect(() => {
+    if (!isOpen || !template) return;
 
-    // 5-second countdown timer: 5 -> 4 -> 3 -> 2 -> 1 -> Automatically Complete
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          // Automatically transition to Generator with selected template
-          onComplete(template);
           return 0;
         }
         return prev - 1;
@@ -54,7 +56,27 @@ export const PostcardUseCountdownModal: React.FC<PostcardUseCountdownModalProps>
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isOpen, template, onComplete]);
+  }, [isOpen, template]);
+
+  // Trigger completion in an effect when countdown reaches 0, outside the render/updater cycle
+  useEffect(() => {
+    if (isOpen && template && countdown === 0 && !completedRef.current) {
+      completedRef.current = true;
+      onComplete(template);
+    }
+  }, [countdown, isOpen, template, onComplete]);
+
+  const handleSkip = () => {
+    if (template && !completedRef.current) {
+      completedRef.current = true;
+      onComplete(template);
+    }
+  };
+
+  const handleClose = () => {
+    completedRef.current = true;
+    onClose();
+  };
 
   if (!isOpen || !template) {
     return null;
@@ -76,7 +98,7 @@ export const PostcardUseCountdownModal: React.FC<PostcardUseCountdownModalProps>
 
         {/* Close / Skip Button */}
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-3.5 right-3.5 text-[#9e8362] hover:text-[#f5ebd7] p-1.5 rounded-full hover:bg-[#2a1b14] transition-colors cursor-pointer"
           aria-label="বাতিল করুন"
         >
@@ -155,7 +177,7 @@ export const PostcardUseCountdownModal: React.FC<PostcardUseCountdownModalProps>
         {/* Instant Skip / Direct Access Option (Non-blocking user convenience) */}
         <div className="pt-2 border-t border-[#c59b27]/15">
           <button
-            onClick={() => onComplete(template)}
+            onClick={handleSkip}
             className="text-xs text-[#9e8362] hover:text-[#e8ba62] transition-colors flex items-center justify-center gap-1 mx-auto font-serif cursor-pointer"
           >
             <span>সরাসরি জেনারেটরে যান</span>

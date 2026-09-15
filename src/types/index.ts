@@ -86,6 +86,14 @@ export interface CategoryItem {
   description?: string;
 }
 
+export interface CustomPhotoConfig {
+  url: string;
+  fit: 'cover' | 'contain';
+  zoom: number; // 1 to 2.5
+  posX: number; // -50 to 50
+  posY: number; // -50 to 50
+}
+
 export interface PostcardCustomState {
   templateId: string;
   recipient: string; // প্রাপক
@@ -100,4 +108,5 @@ export interface PostcardCustomState {
   showPostmark: boolean;
   showAirmailStripe: boolean;
   customStampTitle?: string;
+  customPhoto?: CustomPhotoConfig | null;
 }

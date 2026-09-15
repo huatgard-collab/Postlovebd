@@ -130,37 +130,65 @@ export const PostcardCanvas: React.FC<PostcardCanvasProps> = ({
       data-postcard-container="true"
       id="postcard-live-preview"
       style={getEffectFilterStyle()}
-      className={`relative w-full ${getAspectRatioClasses()} mx-auto rounded-sm overflow-hidden bg-parchment shadow-2xl transition-all duration-300 select-none text-[#2b180d]`}
+      className={`relative w-full ${getAspectRatioClasses()} mx-auto rounded-sm overflow-hidden bg-[#1e130c] shadow-2xl transition-all duration-300 select-none text-[#fdf7ea]`}
     >
+      {/* 1. Full Postcard Background: User Custom Photo OR Built-in Postcard Artwork */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden z-0">
+        {customState.customPhoto ? (
+          <div className="relative w-full h-full overflow-hidden bg-[#1f140e] flex items-center justify-center">
+            <img
+              src={customState.customPhoto.url}
+              alt="User custom postcard background"
+              style={{
+                objectFit: customState.customPhoto.fit || 'cover',
+                transform: `scale(${customState.customPhoto.zoom || 1}) translate(${customState.customPhoto.posX || 0}%, ${customState.customPhoto.posY || 0}%)`,
+                transformOrigin: 'center center',
+              }}
+              className="w-full h-full select-none"
+              crossOrigin="anonymous"
+            />
+          </div>
+        ) : (
+          <PostcardArtwork
+            imageKey={currentTemplate.image}
+            mood={currentTemplate.artworkMood}
+            className="w-full h-full object-cover"
+          />
+        )}
+
+        {/* Subtle transparent gradient overlay to ensure text readability while keeping background artwork clearly visible */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/55 pointer-events-none" />
+      </div>
+
       {/* Film grain / Vintage vignette layer */}
-      <div className="absolute inset-0 pointer-events-none vintage-film-grain vintage-vignette z-30" />
+      <div className="absolute inset-0 pointer-events-none vintage-film-grain vintage-vignette z-10" />
 
       {/* Coffee stain or Dust effect overlays */}
       {customState.effect === 'coffee-stain' && (
-        <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full border-[10px] border-[#704214]/15 opacity-70 pointer-events-none z-20 blur-[0.5px]" />
+        <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full border-[10px] border-[#704214]/25 opacity-70 pointer-events-none z-10 blur-[0.5px]" />
       )}
       {(customState.effect === 'dust' || customState.effect === 'scratch') && (
-        <div className="absolute inset-0 pointer-events-none z-20 opacity-30 bg-[radial-gradient(#5a391a_1px,transparent_1px)] bg-[size:16px_16px]" />
+        <div className="absolute inset-0 pointer-events-none z-10 opacity-30 bg-[radial-gradient(#5a391a_1px,transparent_1px)] bg-[size:16px_16px]" />
       )}
 
-      {/* Inner Postcard Border & Padding */}
-      <div className={`relative w-full h-full p-4 sm:p-6 flex flex-col ${getBorderClasses()} box-border z-10`}>
+      {/* 2. Overlaid Postcard Content: Border, Header, Text, Postage Decorations */}
+      <div className={`relative w-full h-full p-4 sm:p-6 flex flex-col justify-between ${getBorderClasses()} box-border z-20`}>
         {/* Top Header Row: Dhaka GPO postmark, Vintage Postage Stamp, Airmail Stripe */}
         <div className="flex items-center justify-between pb-2 border-b border-[#c59b27]/30 mb-2">
           {/* Left: Vintage Bangladesh Postmark / Airmail indicator */}
           <div className="flex items-center gap-2">
             {customState.showAirmailStripe && (
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] tracking-widest uppercase font-serif text-[#7a1c24] font-semibold border border-[#7a1c24]/50 px-1.5 py-0.5 rounded-xs">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] tracking-widest uppercase font-serif text-[#fcedc7] font-semibold border border-[#fcedc7]/60 bg-[#7a1c24]/90 px-1.5 py-0.5 rounded-xs shadow-xs">
                   PAR AVION
                 </span>
-                <span className="text-[10px] font-serif text-[#8f6d2b] hidden sm:inline">
+                <span className="text-[10px] font-serif text-[#ecd9bf] [text-shadow:_0_1px_2px_rgba(0,0,0,0.9)] hidden sm:inline">
                   POSTLOVEBD ARCHIVE
                 </span>
               </div>
             )}
             {customState.date && (
-              <div className="text-[11px] font-serif text-[#5a3a20] italic tracking-wide">
+              <div className="text-[11px] font-serif text-[#ecd9bf] italic tracking-wide [text-shadow:_0_1px_3px_rgba(0,0,0,0.9)]">
                 {customState.date}
               </div>
             )}
@@ -169,14 +197,14 @@ export const PostcardCanvas: React.FC<PostcardCanvasProps> = ({
           {/* Right: Vintage Stamp & Postmark Seal */}
           <div className="flex items-center gap-2">
             {customState.showPostmark && (
-              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full border border-dashed border-[#8d6227] flex flex-col items-center justify-center text-[7px] sm:text-[8px] font-serif text-[#78501c] rotate-[-12deg] opacity-80">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full border border-dashed border-[#ecd9bf]/80 bg-black/20 backdrop-blur-xs flex flex-col items-center justify-center text-[7px] sm:text-[8px] font-serif text-[#ecd9bf] rotate-[-12deg] shadow-xs [text-shadow:_0_1px_2px_rgba(0,0,0,0.9)]">
                 <span>DHAKA</span>
                 <span className="font-bold text-[9px]">G.P.O.</span>
                 <span>1968</span>
               </div>
             )}
             {customState.showStamp && (
-              <div className="w-10 h-12 sm:w-12 sm:h-14 bg-[#8b232c] border-2 border-dashed border-[#f4ebdc] shadow-sm flex flex-col items-center justify-center text-center p-1 rounded-xs rotate-3 text-[#fcedc7]">
+              <div className="w-10 h-12 sm:w-12 sm:h-14 bg-[#7a1c24] border-2 border-dashed border-[#fcedc7] shadow-md flex flex-col items-center justify-center text-center p-1 rounded-xs rotate-3 text-[#fcedc7]">
                 <span className="text-[7px] tracking-wider uppercase font-serif">POST</span>
                 <span className="text-xs sm:text-sm">💌</span>
                 <span className="text-[8px] font-bold mt-0.5">৳৫</span>
@@ -185,50 +213,43 @@ export const PostcardCanvas: React.FC<PostcardCanvasProps> = ({
           </div>
         </div>
 
-        {/* Center Content: Split or Flow layout for Artwork & Romantic Text */}
-        <div className="relative flex-1 flex flex-col md:flex-row gap-3 sm:gap-5 items-center overflow-hidden min-h-0">
-          {/* Postcard Vintage Artwork Illustration */}
-          <div className="w-full md:w-5/12 h-36 md:h-full shrink-0 rounded-xs overflow-hidden border border-[#b89535]/40 shadow-inner bg-[#231710]">
-            <PostcardArtwork imageKey={currentTemplate.image} mood={currentTemplate.artworkMood} />
-          </div>
+        {/* Center Content: Direct text overlay on top of the background image (No white/black box behind text) */}
+        <div
+          className={`flex-1 flex flex-col ${getPositionClass()} ${getAlignmentClass()} py-2 px-2 sm:px-4 overflow-hidden`}
+        >
+          {/* Recipient / প্রাপক */}
+          {customState.recipient && (
+            <div className="text-xs sm:text-sm font-serif italic text-[#ecd9bf] [text-shadow:_0_1px_3px_rgba(0,0,0,0.95)] mb-2 font-medium tracking-wide">
+              {customState.recipient}
+            </div>
+          )}
 
-          {/* Postcard Custom Text Layout */}
-          <div
-            className={`w-full md:w-7/12 flex-1 flex flex-col ${getPositionClass()} ${getAlignmentClass()} p-2 overflow-hidden`}
+          {/* Main Quote / Message */}
+          <p
+            className={`leading-relaxed transition-all max-w-[96%] ${getFontFamilyClass()}`}
+            style={{
+              fontSize: `${customState.style.fontSize}px`,
+              color: customState.style.color || '#fdf7ea',
+              fontWeight: customState.style.bold ? '700' : '400',
+              fontStyle: customState.style.italic ? 'italic' : 'normal',
+              letterSpacing: `${customState.style.letterSpacing || 0}px`,
+              lineHeight: customState.style.lineHeight || 1.6,
+              textShadow: '0 1px 3px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.85), 0 0 16px rgba(0,0,0,0.5)',
+            }}
           >
-            {/* Recipient / প্রাপক */}
-            {customState.recipient && (
-              <div className="text-xs sm:text-sm font-serif italic text-[#633e21] mb-1.5 font-medium tracking-wide">
-                {customState.recipient}
-              </div>
-            )}
+            {customState.message || currentTemplate.defaultQuote}
+          </p>
 
-            {/* Main Quote / Message */}
-            <p
-              className={`leading-relaxed transition-all max-w-[95%] ${getFontFamilyClass()}`}
-              style={{
-                fontSize: `${customState.style.fontSize}px`,
-                color: customState.style.color,
-                fontWeight: customState.style.bold ? '700' : '400',
-                fontStyle: customState.style.italic ? 'italic' : 'normal',
-                letterSpacing: `${customState.style.letterSpacing || 0}px`,
-                lineHeight: customState.style.lineHeight || 1.6,
-              }}
-            >
-              {customState.message || currentTemplate.defaultQuote}
-            </p>
-
-            {/* Sender / প্রেরক */}
-            {customState.sender && (
-              <div className="text-xs sm:text-sm font-serif italic text-[#633e21] mt-2 font-medium tracking-wide">
-                {customState.sender}
-              </div>
-            )}
-          </div>
+          {/* Sender / প্রেরক */}
+          {customState.sender && (
+            <div className="text-xs sm:text-sm font-serif italic text-[#ecd9bf] [text-shadow:_0_1px_3px_rgba(0,0,0,0.95)] mt-2.5 font-medium tracking-wide">
+              {customState.sender}
+            </div>
+          )}
         </div>
 
         {/* Bottom Vintage Postcard Footer Watermark / Registry Info */}
-        <div className="mt-2 pt-1 border-t border-[#c59b27]/20 flex items-center justify-between text-[8px] sm:text-[9px] font-serif text-[#8f6d2b]/80">
+        <div className="mt-2 pt-1.5 border-t border-[#c59b27]/30 flex items-center justify-between text-[8px] sm:text-[9px] font-serif text-[#ecd9bf]/85 [text-shadow:_0_1px_2px_rgba(0,0,0,0.85)]">
           <span>💌 POSTLOVEBD • CARTE POSTALE</span>
           <span className="hidden sm:inline">সিরিয়াল নং: {customState.templateId.toUpperCase()}-BD</span>
           <span>পুরনো দিনের অনুভূতি</span>

@@ -14,6 +14,7 @@ import { postcards } from '../data/postcards';
 import { quotes } from '../data/quotes';
 import { categories } from '../data/categories';
 import { PostcardCanvas } from '../components/PostcardCanvas';
+import { PostcardArtwork } from '../components/PostcardArtwork';
 import { SponsorGateModal } from '../components/SponsorGateModal';
 import { exportPostcardImage } from '../utils/exportPostcard';
 import {
@@ -38,6 +39,12 @@ import {
   Calendar,
   User,
   PenTool,
+  Camera,
+  Image as ImageIcon,
+  Trash2,
+  RefreshCw,
+  ZoomIn,
+  Move,
 } from 'lucide-react';
 
 interface GeneratorPageProps {
@@ -112,6 +119,50 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
   const [exportFormat, setExportFormat] = useState<'png' | 'jpg'>('png');
   const [isExporting, setIsExporting] = useState(false);
   const postcardContainerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Dynamic categories to ensure no templates are hidden
+  const allTemplateCategories = [
+    'সবগুলো',
+    ...Array.from(
+      new Set([
+        ...categories.map((c) => c.name),
+        ...postcards.map((p) => p.category),
+      ])
+    ),
+  ];
+
+  // Local-only photo upload handler using FileReader (100% private in browser)
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (result) {
+        setCustomState((prev) => ({
+          ...prev,
+          customPhoto: {
+            url: result,
+            fit: prev.customPhoto?.fit || 'cover',
+            zoom: prev.customPhoto?.zoom || 1,
+            posX: prev.customPhoto?.posX || 0,
+            posY: prev.customPhoto?.posY || 0,
+          },
+        }));
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleRemovePhoto = () => {
+    setCustomState((prev) => ({
+      ...prev,
+      customPhoto: null,
+    }));
+  };
 
   // Filtered lists
   const filteredTemplates = templateCategoryFilter === 'সবগুলো'
@@ -197,16 +248,16 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
     }
   };
 
-  // Curated Ink colors
+  // Curated Ink colors (Warm cream, gold, white & vintage tones)
   const inkColors = [
+    { label: 'Warm Cream', value: '#fdf7ea' },
+    { label: 'Antique Gold', value: '#f6d365' },
+    { label: 'Ivory White', value: '#ffffff' },
+    { label: 'Parchment Gold', value: '#e8ba62' },
+    { label: 'Champagne Rose', value: '#fde2d4' },
+    { label: 'Soft Vanilla', value: '#fff8db' },
     { label: 'Antique Sepia', value: '#3b2418' },
     { label: 'Burgundy Wine', value: '#521319' },
-    { label: 'Deep Walnut', value: '#24140e' },
-    { label: 'Vintage Black', value: '#1a130f' },
-    { label: 'Navy Indigo', value: '#132130' },
-    { label: 'Forest Moss', value: '#1a2e20' },
-    { label: 'Golden Ochre', value: '#785618' },
-    { label: 'Aged Cream', value: '#f4ebd9' },
   ];
 
   const fontOptions: FontFamilyChoice[] = [
@@ -398,38 +449,268 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
             </button>
           </div>
 
-          {/* TAB 1: POSTCARD TEMPLATES */}
+          {/* TAB 1: POSTCARD TEMPLATES & USER PHOTO */}
           {activeTab === 'template' && (
             <div className="p-4 sm:p-5 rounded-xl bg-[#17100b] border border-[#c59b27]/30 space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-[#c59b27]/20">
-                <h3 className="text-sm font-serif font-bold text-[#f2e2cb]">
-                  ১. পোস্টকার্ড নির্বাচন করুন
-                </h3>
-                <span className="text-[11px] text-[#8e7456] font-serif">
-                  {postcards.length}+ টেমপ্লেট
-                </span>
-              </div>
+              {/* Hidden Local File Input */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handlePhotoUpload}
+                accept="image/*"
+                className="hidden"
+                id="user-postcard-photo-input"
+              />
 
-              {/* Category Filter Chips */}
-              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
-                {['সবগুলো', 'বৃষ্টি', 'প্রেমপত্র', 'রোমান্টিক', 'বিরহ', 'Classic Vintage', 'রাতের অনুভূতি'].map(
-                  (cat) => (
+              {/* 📷 USE YOUR OWN PHOTO AS BACKGROUND SECTION */}
+              <div className="rounded-lg border border-[#c59b27]/40 bg-[#1e130c] p-3 sm:p-4 shadow-sm">
+                {!customState.customPhoto ? (
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-[#7a1c24] text-[#fcedc7] flex items-center justify-center text-lg shadow-xs shrink-0 border border-[#c59b27]/30">
+                        📷
+                      </div>
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-serif font-bold text-[#fcedc7]">
+                          📷 নিজের ছবি ব্যবহার করুন
+                        </h4>
+                        <p className="text-[11px] font-serif text-[#bda282] leading-tight">
+                          ফোন বা পিসি থেকে নিজস্ব ছবি ব্যাকগ্রাউন্ড হিসেবে যোগ করুন (১০০% প্রাইভেট)
+                        </p>
+                      </div>
+                    </div>
                     <button
-                      key={cat}
-                      onClick={() => setTemplateCategoryFilter(cat)}
-                      className={`px-2.5 py-1 rounded-md text-[11px] font-serif whitespace-nowrap transition-colors ${
-                        templateCategoryFilter === cat
-                          ? 'bg-[#c59b27] text-[#120d0a] font-bold'
-                          : 'bg-[#221610] text-[#c5b29c] hover:bg-[#2f1d15]'
-                      }`}
+                      type="button"
+                      id="upload-custom-photo-btn"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full sm:w-auto px-3.5 py-1.5 rounded-lg bg-[#7a1c24] hover:bg-[#92232c] text-[#fcedc7] text-xs font-serif font-bold border border-[#c59b27]/40 shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                     >
-                      {cat}
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>📷 ছবি নির্বাচন করুন</span>
                     </button>
-                  )
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {/* Active Custom Photo Header */}
+                    <div className="flex items-center justify-between pb-2 border-b border-[#c59b27]/20">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-md overflow-hidden border border-[#e8ba62] bg-[#2d1a10] shrink-0">
+                          <img
+                            src={customState.customPhoto.url}
+                            alt="Custom background preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-serif font-bold text-[#e8ba62]">
+                              📷 নিজস্ব ছবি ব্যাকগ্রাউন্ড
+                            </span>
+                            <span className="text-[9px] bg-[#3a2012] text-[#c59b27] px-1.5 py-0.5 rounded font-sans">
+                              সক্রিয় ✓
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-[#bda282]">
+                            পোস্টকার্ড আর্টওয়ার্কে আপনার নির্বাচিত ছবি প্রদর্শিত হচ্ছে
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons: Replace & Remove */}
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          id="replace-custom-photo-btn"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="px-2.5 py-1 rounded bg-[#2c1b12] hover:bg-[#3d2519] text-[#fcedc7] text-[11px] font-serif border border-[#c59b27]/30 flex items-center gap-1 transition-colors cursor-pointer"
+                          title="নতুন ছবি নির্বাচন করুন"
+                        >
+                          <RefreshCw className="w-3 h-3 text-[#c59b27]" />
+                          <span>🔄 পরিবর্তন</span>
+                        </button>
+                        <button
+                          type="button"
+                          id="remove-custom-photo-btn"
+                          onClick={handleRemovePhoto}
+                          className="px-2.5 py-1 rounded bg-[#3a1417] hover:bg-[#541a1f] text-[#fca5a5] text-[11px] font-serif border border-[#991b1b]/40 flex items-center gap-1 transition-colors cursor-pointer"
+                          title="ছবি সরিয়ে বিল্ট-ইন আর্টওয়ার্কে ফিরে যান"
+                        >
+                          <Trash2 className="w-3 h-3 text-[#f87171]" />
+                          <span>✕ ছবি সরান</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Image Fit & Positioning Controls */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-[11px] font-serif">
+                      {/* Fit Mode */}
+                      <div className="flex items-center justify-between bg-[#150d08] p-2 rounded border border-[#c59b27]/20">
+                        <span className="text-[#c5b29c]">ফটোর মাপ (Fit):</span>
+                        <div className="flex gap-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setCustomState((prev) => ({
+                                ...prev,
+                                customPhoto: prev.customPhoto
+                                  ? { ...prev.customPhoto, fit: 'cover' }
+                                  : null,
+                              }))
+                            }
+                            className={`px-2 py-0.5 rounded text-[10px] font-serif transition-colors ${
+                              customState.customPhoto.fit === 'cover'
+                                ? 'bg-[#c59b27] text-[#120d0a] font-bold'
+                                : 'bg-[#241710] text-[#a98f73] hover:text-white'
+                            }`}
+                          >
+                            Cover
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setCustomState((prev) => ({
+                                ...prev,
+                                customPhoto: prev.customPhoto
+                                  ? { ...prev.customPhoto, fit: 'contain' }
+                                  : null,
+                              }))
+                            }
+                            className={`px-2 py-0.5 rounded text-[10px] font-serif transition-colors ${
+                              customState.customPhoto.fit === 'contain'
+                                ? 'bg-[#c59b27] text-[#120d0a] font-bold'
+                                : 'bg-[#241710] text-[#a98f73] hover:text-white'
+                            }`}
+                          >
+                            Contain
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Zoom */}
+                      <div className="flex items-center justify-between bg-[#150d08] p-2 rounded border border-[#c59b27]/20">
+                        <span className="text-[#c5b29c] flex items-center gap-1">
+                          <ZoomIn className="w-3 h-3 text-[#c59b27]" />
+                          <span>জুম ({Math.round((customState.customPhoto.zoom || 1) * 100)}%):</span>
+                        </span>
+                        <input
+                          type="range"
+                          min="1"
+                          max="2.5"
+                          step="0.05"
+                          value={customState.customPhoto.zoom || 1}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            setCustomState((prev) => ({
+                              ...prev,
+                              customPhoto: prev.customPhoto
+                                ? { ...prev.customPhoto, zoom: val }
+                                : null,
+                            }));
+                          }}
+                          className="w-24 accent-[#c59b27] cursor-pointer"
+                        />
+                      </div>
+
+                      {/* Position X */}
+                      <div className="flex items-center justify-between bg-[#150d08] p-2 rounded border border-[#c59b27]/20">
+                        <span className="text-[#c5b29c] flex items-center gap-1">
+                          <Move className="w-3 h-3 text-[#c59b27]" />
+                          <span>অবস্থান X ({customState.customPhoto.posX || 0}%):</span>
+                        </span>
+                        <input
+                          type="range"
+                          min="-50"
+                          max="50"
+                          step="2"
+                          value={customState.customPhoto.posX || 0}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value, 10);
+                            setCustomState((prev) => ({
+                              ...prev,
+                              customPhoto: prev.customPhoto
+                                ? { ...prev.customPhoto, posX: val }
+                                : null,
+                            }));
+                          }}
+                          className="w-24 accent-[#c59b27] cursor-pointer"
+                        />
+                      </div>
+
+                      {/* Position Y */}
+                      <div className="flex items-center justify-between bg-[#150d08] p-2 rounded border border-[#c59b27]/20">
+                        <span className="text-[#c5b29c] flex items-center gap-1">
+                          <Move className="w-3 h-3 text-[#c59b27]" />
+                          <span>অবস্থান Y ({customState.customPhoto.posY || 0}%):</span>
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="range"
+                            min="-50"
+                            max="50"
+                            step="2"
+                            value={customState.customPhoto.posY || 0}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10);
+                              setCustomState((prev) => ({
+                                ...prev,
+                                customPhoto: prev.customPhoto
+                                  ? { ...prev.customPhoto, posY: val }
+                                  : null,
+                              }));
+                            }}
+                            className="w-20 accent-[#c59b27] cursor-pointer"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setCustomState((prev) => ({
+                                ...prev,
+                                customPhoto: prev.customPhoto
+                                  ? { ...prev.customPhoto, posX: 0, posY: 0, zoom: 1 }
+                                  : null,
+                              }))
+                            }
+                            className="text-[9px] px-1.5 py-0.5 rounded bg-[#241710] text-[#c5b29c] hover:text-white"
+                            title="মাঝখানে রিসেট করুন"
+                          >
+                            রিসেট
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 
-              {/* Template Thumbnails Grid */}
+              {/* BUILT-IN TEMPLATES SECTION */}
+              <div className="flex items-center justify-between pt-1 pb-2 border-b border-[#c59b27]/20">
+                <h3 className="text-sm font-serif font-bold text-[#f2e2cb]">
+                  ১. বিল্ট-ইন পোস্টকার্ড টেমপ্লেট
+                </h3>
+                <span className="text-[11px] text-[#8e7456] font-serif">
+                  {postcards.length}টি টেমপ্লেট
+                </span>
+              </div>
+
+              {/* Dynamic Category Filter Chips */}
+              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+                {allTemplateCategories.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setTemplateCategoryFilter(cat)}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-serif whitespace-nowrap transition-colors cursor-pointer ${
+                      templateCategoryFilter === cat
+                        ? 'bg-[#c59b27] text-[#120d0a] font-bold'
+                        : 'bg-[#221610] text-[#c5b29c] hover:bg-[#2f1d15]'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              {/* Template Thumbnails Grid with real artwork renders */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-96 overflow-y-auto pr-1">
                 {filteredTemplates.map((p) => {
                   const isSelected = customState.templateId === p.id;
@@ -449,8 +730,12 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
                           : 'border-[#c59b27]/25 hover:border-[#c59b27]/60 bg-[#1c120c]'
                       }`}
                     >
-                      <div className="w-full aspect-[4/3] rounded-xs bg-[#241812] flex items-center justify-center text-xl overflow-hidden">
-                        💌
+                      <div className="w-full aspect-[4/3] rounded-xs bg-[#241812] overflow-hidden relative">
+                        <PostcardArtwork
+                          imageKey={p.image}
+                          mood={p.artworkMood}
+                          className="w-full h-full pointer-events-none"
+                        />
                       </div>
                       <div className="mt-1 px-1">
                         <div className="text-[11px] font-serif font-bold text-[#f7efe1] truncate">
@@ -459,7 +744,7 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
                         <div className="text-[9px] text-[#bda282]">{p.category}</div>
                       </div>
                       {isSelected && (
-                        <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#c59b27] text-[#120d0a] flex items-center justify-center text-[10px] font-bold">
+                        <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#c59b27] text-[#120d0a] flex items-center justify-center text-[10px] font-bold shadow-xs">
                           ✓
                         </div>
                       )}

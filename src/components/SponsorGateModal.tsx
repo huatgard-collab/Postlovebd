@@ -35,14 +35,10 @@ export const SponsorGateModal: React.FC<SponsorGateModalProps> = ({
     let timer: NodeJS.Timeout;
     if (hasClickedSponsor && countdown > 0) {
       timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            setIsReady(true);
-            return 0;
-          }
-          return prev - 1;
-        });
+        setCountdown((prev) => Math.max(0, prev - 1));
       }, 1000);
+    } else if (hasClickedSponsor && countdown === 0) {
+      setIsReady(true);
     }
     return () => {
       if (timer) clearInterval(timer);
