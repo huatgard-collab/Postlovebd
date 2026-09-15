@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --vintage-bg: #120d0a;
+    --vintage-card-bg: #1a130e;
+    --vintage-gold: #c59b27;
+    --vintage-burgundy: #7a1c24;
+    --vintage-cream: #f5ebd7;
+    --vintage-parchment: #f9f2e4;
+  }
+
+  body {
+    background-color: #120d0a;
+    color: #f5ebd7;
+    font-family: 'Anek Bangla', 'Noto Serif Bengali', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  /* Custom vintage scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #140e0b;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #3a281d;
+    border-radius: 4px;
+    border: 1px solid rgba(197, 155, 39, 0.2);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #523828;
+  }
+}
+
+/* Font utility mappings */
+.font-vintage-serif {
+  font-family: 'Cinzel', 'Noto Serif Bengali', Georgia, serif;
+}
+.font-calligraphy {
+  font-family: 'Tiro Bangla', 'EB Garamond', cursive, serif;
+}
+.font-bengali-elegant {
+  font-family: 'Anek Bangla', 'Noto Serif Bengali', sans-serif;
+}
+.font-typewriter {
+  font-family: 'Special Elite', 'Courier New', monospace;
+}
+.font-classic {
+  font-family: 'EB Garamond', 'Noto Serif Bengali', serif;
+}
+.font-handwritten {
+  font-family: 'Great Vibes', 'Tiro Bangla', cursive;
+}
+.font-old-newspaper {
+  font-family: 'Cinzel', 'Noto Serif Bengali', serif;
+}
+
+/* Parchment / Paper effect */
+.bg-parchment {
+  background-color: #f7efe1;
+  background-image: radial-gradient(#dcc9a8 0.75px, transparent 0.75px), radial-gradient(#dcc9a8 0.75px, #f7efe1 0.75px);
+  background-size: 30px 30px;
+  background-position: 0 0, 15px 15px;
+}
+
+/* Aged vignette effect */
+.vintage-vignette {
+  box-shadow: inset 0 0 70px rgba(66, 38, 19, 0.45);
+}
+
+/* Film grain effect */
+.vintage-film-grain {
+  position: relative;
+}
+.vintage-film-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.7;
+}
+
+/* Postal stamp serrated border */
+.postal-stamp-edge {
+  background: radial-gradient(circle, transparent, transparent 4px, #f7efe1 4.5px);
+  background-size: 16px 16px;
+}
