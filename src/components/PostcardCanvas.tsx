@@ -2,6 +2,7 @@ import React from 'react';
 import { PostcardCustomState } from '../types';
 import { PostcardArtwork } from './PostcardArtwork';
 import { postcards } from '../data/postcards';
+import { resolveBengaliFont } from '../data/bengaliFonts';
 
 interface PostcardCanvasProps {
   customState: PostcardCustomState;
@@ -15,6 +16,9 @@ export const PostcardCanvas: React.FC<PostcardCanvasProps> = ({
 }) => {
   const currentTemplate =
     postcards.find((p) => p.id === customState.templateId) || postcards[0];
+
+  // Resolve currently active Bengali Unicode font
+  const activeFont = resolveBengaliFont(customState.selectedFont || customState.style.fontFamily);
 
   // Aspect ratio styling
   const getAspectRatioClasses = () => {
@@ -188,7 +192,10 @@ export const PostcardCanvas: React.FC<PostcardCanvasProps> = ({
               </div>
             )}
             {customState.date && (
-              <div className="text-[11px] font-serif text-[#ecd9bf] italic tracking-wide [text-shadow:_0_1px_3px_rgba(0,0,0,0.9)]">
+              <div
+                style={{ fontFamily: activeFont.fontFamily }}
+                className="text-[11px] text-[#ecd9bf] italic tracking-wide [text-shadow:_0_1px_3px_rgba(0,0,0,0.9)]"
+              >
                 {customState.date}
               </div>
             )}
@@ -219,15 +226,19 @@ export const PostcardCanvas: React.FC<PostcardCanvasProps> = ({
         >
           {/* Recipient / প্রাপক */}
           {customState.recipient && (
-            <div className="text-xs sm:text-sm font-serif italic text-[#ecd9bf] [text-shadow:_0_1px_3px_rgba(0,0,0,0.95)] mb-2 font-medium tracking-wide">
+            <div
+              style={{ fontFamily: activeFont.fontFamily }}
+              className="text-xs sm:text-sm italic text-[#ecd9bf] [text-shadow:_0_1px_3px_rgba(0,0,0,0.95)] mb-2 font-medium tracking-wide"
+            >
               {customState.recipient}
             </div>
           )}
 
           {/* Main Quote / Message */}
           <p
-            className={`leading-relaxed transition-all max-w-[96%] ${getFontFamilyClass()}`}
+            className="leading-relaxed transition-all max-w-[96%]"
             style={{
+              fontFamily: activeFont.fontFamily,
               fontSize: `${customState.style.fontSize}px`,
               color: customState.style.color || '#fdf7ea',
               fontWeight: customState.style.bold ? '700' : '400',
@@ -242,7 +253,10 @@ export const PostcardCanvas: React.FC<PostcardCanvasProps> = ({
 
           {/* Sender / প্রেরক */}
           {customState.sender && (
-            <div className="text-xs sm:text-sm font-serif italic text-[#ecd9bf] [text-shadow:_0_1px_3px_rgba(0,0,0,0.95)] mt-2.5 font-medium tracking-wide">
+            <div
+              style={{ fontFamily: activeFont.fontFamily }}
+              className="text-xs sm:text-sm italic text-[#ecd9bf] [text-shadow:_0_1px_3px_rgba(0,0,0,0.95)] mt-2.5 font-medium tracking-wide"
+            >
               {customState.sender}
             </div>
           )}
@@ -252,7 +266,7 @@ export const PostcardCanvas: React.FC<PostcardCanvasProps> = ({
         <div className="mt-2 pt-1.5 border-t border-[#c59b27]/30 flex items-center justify-between text-[8px] sm:text-[9px] font-serif text-[#ecd9bf]/85 [text-shadow:_0_1px_2px_rgba(0,0,0,0.85)]">
           <span>💌 POSTLOVEBD • CARTE POSTALE</span>
           <span className="hidden sm:inline">সিরিয়াল নং: {customState.templateId.toUpperCase()}-BD</span>
-          <span>পুরনো দিনের অনুভূতি</span>
+          <span style={{ fontFamily: activeFont.fontFamily }}>পুরনো দিনের অনুভূতি</span>
         </div>
       </div>
     </div>

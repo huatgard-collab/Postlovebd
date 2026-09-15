@@ -13,9 +13,11 @@ import {
 import { postcards } from '../data/postcards';
 import { quotes } from '../data/quotes';
 import { categories } from '../data/categories';
+import { BENGALI_FONTS, resolveBengaliFont } from '../data/bengaliFonts';
 import { PostcardCanvas } from '../components/PostcardCanvas';
 import { PostcardArtwork } from '../components/PostcardArtwork';
 import { SponsorGateModal } from '../components/SponsorGateModal';
+import { PhotoUploadSponsorModal } from '../components/PhotoUploadSponsorModal';
 import { exportPostcardImage } from '../utils/exportPostcard';
 import {
   Sparkles,
@@ -65,8 +67,9 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
     message: initialQuote?.text || defaultTemplate.defaultQuote,
     sender: 'ইতি, তোমার...',
     date: '১৩ই শ্রাবণ, ঢাকা',
+    selectedFont: 'elegant-serif',
     style: {
-      fontFamily: defaultTemplate.style.fontFamily,
+      fontFamily: 'elegant-serif',
       fontSize: defaultTemplate.style.fontSize,
       alignment: defaultTemplate.style.alignment,
       position: defaultTemplate.style.position,
@@ -121,6 +124,9 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
   const postcardContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Photo Upload 10-Second Sponsor Gate State
+  const [isPhotoSponsorOpen, setIsPhotoSponsorOpen] = useState(false);
+
   // Dynamic categories to ensure no templates are hidden
   const allTemplateCategories = [
     'সবগুলো',
@@ -164,6 +170,14 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
     }));
   };
 
+  // Completion callback for 10-second photo upload sponsor gate
+  const handlePhotoSponsorComplete = () => {
+    setIsPhotoSponsorOpen(false);
+    setTimeout(() => {
+      fileInputRef.current?.click();
+    }, 50);
+  };
+
   // Filtered lists
   const filteredTemplates = templateCategoryFilter === 'সবগুলো'
     ? postcards
@@ -203,13 +217,29 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
     }));
   };
 
+  // Active font helper
+  const currentFont = resolveBengaliFont(customState.selectedFont || customState.style.fontFamily);
+
+  // Font Selection Handler
+  const handleSelectFont = (fontId: string) => {
+    setCustomState((prev) => ({
+      ...prev,
+      selectedFont: fontId,
+      style: {
+        ...prev.style,
+        fontFamily: fontId,
+      },
+    }));
+  };
+
   // Reset Text Style Handler
   const handleResetTextStyle = () => {
     const currentT = postcards.find((p) => p.id === customState.templateId) || postcards[0];
     setCustomState((prev) => ({
       ...prev,
+      selectedFont: 'elegant-serif',
       style: {
-        fontFamily: currentT.style.fontFamily,
+        fontFamily: 'elegant-serif',
         fontSize: currentT.style.fontSize,
         alignment: currentT.style.alignment,
         position: currentT.style.position,
@@ -424,8 +454,9 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
                   ? 'bg-[#7a1c24] text-white shadow-xs'
                   : 'text-[#b89e80] hover:text-white hover:bg-[#241710]'
               }`}
+              title="🔤 ফন্ট নির্বাচন করুন"
             >
-              ৪. ফন্ট
+              ৪. 🔤 ফন্ট
             </button>
             <button
               onClick={() => setActiveTab('effects')}
@@ -482,7 +513,7 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
                     <button
                       type="button"
                       id="upload-custom-photo-btn"
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={() => setIsPhotoSponsorOpen(true)}
                       className="w-full sm:w-auto px-3.5 py-1.5 rounded-lg bg-[#7a1c24] hover:bg-[#92232c] text-[#fcedc7] text-xs font-serif font-bold border border-[#c59b27]/40 shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                     >
                       <Camera className="w-3.5 h-3.5" />
@@ -526,7 +557,7 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
                           title="নতুন ছবি নির্বাচন করুন"
                         >
                           <RefreshCw className="w-3 h-3 text-[#c59b27]" />
-                          <span>🔄 পরিবর্তন</span>
+                          <span>🔄 ছবি পরিবর্তন করুন</span>
                         </button>
                         <button
                           type="button"
@@ -833,6 +864,26 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
                 </p>
               </div>
 
+              {/* ফন্ট নির্বাচন কুইক অ্যাক্সেস */}
+              <div className="p-3 rounded-lg bg-[#20140e] border border-[#c59b27]/30 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🔤</span>
+                  <div>
+                    <div className="text-[10px] text-[#bda282] font-serif">পোস্টকার্ড লেখার ফন্ট:</div>
+                    <div className="text-xs font-serif font-bold text-[#fcedc7]">
+                      {currentFont.name} <span className="text-[#c59b27]">({currentFont.bengaliName})</span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('typography')}
+                  className="px-2.5 py-1 text-xs rounded bg-[#7a1c24] hover:bg-[#94242c] text-[#fcedc7] font-serif border border-[#c59b27]/40 flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span>🔤 ফন্ট নির্বাচন করুন</span>
+                </button>
+              </div>
+
               {/* প্রাপক */}
               <div>
                 <label className="block text-xs font-serif text-[#d6c2a8] mb-1 flex items-center gap-1.5">
@@ -841,6 +892,7 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
                 </label>
                 <input
                   type="text"
+                  style={{ fontFamily: currentFont.fontFamily }}
                   value={customState.recipient}
                   onChange={(e) =>
                     setCustomState((prev) => ({ ...prev, recipient: e.target.value }))
@@ -858,6 +910,7 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
                 </label>
                 <textarea
                   rows={4}
+                  style={{ fontFamily: currentFont.fontFamily }}
                   value={customState.message}
                   onChange={(e) =>
                     setCustomState((prev) => ({ ...prev, message: e.target.value }))
@@ -875,6 +928,7 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
                   </label>
                   <input
                     type="text"
+                    style={{ fontFamily: currentFont.fontFamily }}
                     value={customState.sender}
                     onChange={(e) =>
                       setCustomState((prev) => ({ ...prev, sender: e.target.value }))
@@ -890,6 +944,7 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
                   </label>
                   <input
                     type="text"
+                    style={{ fontFamily: currentFont.fontFamily }}
                     value={customState.date}
                     onChange={(e) =>
                       setCustomState((prev) => ({ ...prev, date: e.target.value }))
@@ -939,58 +994,114 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
             </div>
           )}
 
-          {/* TAB 4: TEXT CUSTOMIZATION (Font Family, Size, Alignment, Color, Reset) */}
+          {/* TAB 4: FONT SELECTION & TYPOGRAPHY (🔤 ফন্ট নির্বাচন করুন) */}
           {activeTab === 'typography' && (
-            <div className="p-4 sm:p-5 rounded-xl bg-[#17100b] border border-[#c59b27]/30 space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-[#c59b27]/20">
-                <h3 className="text-sm font-serif font-bold text-[#f2e2cb]">
-                  ৪. টাইপোগ্রাফি ও স্টাইল
-                </h3>
+            <div className="p-4 sm:p-5 rounded-xl bg-[#17100b] border border-[#c59b27]/30 space-y-5">
+              {/* Header with Title and Reset */}
+              <div className="flex items-center justify-between pb-2.5 border-b border-[#c59b27]/20">
+                <div>
+                  <h3 className="text-sm font-serif font-bold text-[#f2e2cb] flex items-center gap-1.5">
+                    <span className="text-base">🔤</span>
+                    <span>ফন্ট নির্বাচন করুন</span>
+                  </h3>
+                  <p className="text-[11px] text-[#bda282] font-serif mt-0.5">
+                    পোস্টকার্ডের সকল লেখার জন্য পছন্দের সুন্দর বাংলা ফন্ট বেছে নিন
+                  </p>
+                </div>
                 <button
                   onClick={handleResetTextStyle}
-                  className="text-xs font-serif text-[#c59b27] hover:text-[#f8d48d] flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-serif text-[#c59b27] hover:text-[#f8d48d] flex items-center gap-1 cursor-pointer transition-colors"
+                  title="ডিফল্ট ফন্ট ও সাইজে রিসেট করুন"
                 >
                   <RotateCcw className="w-3 h-3" />
-                  <span>Reset Text Style</span>
+                  <span>রিসেট</span>
                 </button>
               </div>
 
-              {/* Font Family Selector */}
+              {/* Currently Selected Font Status Badge */}
+              <div className="p-2.5 rounded-lg bg-[#20140e] border border-[#c59b27]/30 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-[#7a1c24] border border-[#c59b27]/50 flex items-center justify-center text-xs font-serif text-[#fcedc7] font-bold">
+                    অ
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-[#bda282] font-serif">বর্তমানে নির্বাচিত ফন্ট:</div>
+                    <div className="text-xs font-serif font-bold text-[#fcedc7]">
+                      {currentFont.name} <span className="text-[#c59b27]">({currentFont.bengaliName})</span>
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded-sm bg-[#c59b27]/20 text-[#f6d365] font-serif border border-[#c59b27]/30 font-semibold">
+                  ✓ সক্রিয় ফন্ট
+                </span>
+              </div>
+
+              {/* BENGALI FONT GRID / LIST */}
               <div>
-                <label className="block text-xs font-serif text-[#d6c2a8] mb-1.5">
-                  Font Family (ফন্ট স্টাইল)
+                <label className="block text-xs font-serif text-[#d6c2a8] mb-2 font-medium">
+                  বাংলা ফন্ট স্টাইল তালিকা ({BENGALI_FONTS.length}টি সুন্দর ফন্ট)
                 </label>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {fontOptions.map((font) => (
-                    <button
-                      key={font}
-                      onClick={() =>
-                        setCustomState((prev) => ({
-                          ...prev,
-                          style: { ...prev.style, fontFamily: font },
-                        }))
-                      }
-                      className={`p-2 rounded-lg text-left text-xs font-serif transition-all ${
-                        customState.style.fontFamily === font
-                          ? 'bg-[#7a1c24] text-white border border-[#d4af37]/40 font-bold'
-                          : 'bg-[#221610] text-[#c5b29c] hover:bg-[#2d1b14] border border-[#c59b27]/20'
-                      }`}
-                    >
-                      {font}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-96 overflow-y-auto pr-1 scrollbar-thin">
+                  {BENGALI_FONTS.map((font) => {
+                    const isSelected = currentFont.id === font.id;
+                    return (
+                      <button
+                        key={font.id}
+                        type="button"
+                        onClick={() => handleSelectFont(font.id)}
+                        className={`w-full p-3 rounded-xl text-left transition-all cursor-pointer relative overflow-hidden group ${
+                          isSelected
+                            ? 'bg-[#321c13] border-2 border-[#e8ba62] ring-2 ring-[#c59b27]/40 shadow-lg'
+                            : 'bg-[#1e130d] border border-[#c59b27]/25 hover:border-[#c59b27]/60 hover:bg-[#281810]'
+                        }`}
+                      >
+                        {/* Top Row: Font Name & Badge */}
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-serif font-bold text-[#f5ebd7]">
+                              {font.name}
+                            </span>
+                            {font.badge && (
+                              <span className="text-[9px] px-1.5 py-0.2 rounded-xs bg-[#7a1c24] text-[#fcedc7] font-serif border border-[#c59b27]/30">
+                                {font.badge}
+                              </span>
+                            )}
+                          </div>
+                          {isSelected && (
+                            <div className="w-4 h-4 rounded-full bg-[#c59b27] text-[#120d0a] flex items-center justify-center text-[10px] font-bold shadow-xs">
+                              ✓
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Main Bengali Preview Text in this specific font */}
+                        <div
+                          className="text-base sm:text-lg text-[#fcedc7] tracking-wide py-1.5 my-1 px-2 rounded-md bg-black/30 border border-white/5"
+                          style={{ fontFamily: font.fontFamily }}
+                        >
+                          [ {font.previewPhrase} ]
+                        </div>
+
+                        {/* Bottom Row: Bengali Name & Description */}
+                        <div className="flex items-center justify-between text-[10px] text-[#ab957c] font-serif mt-1">
+                          <span>{font.bengaliName}</span>
+                          <span className="text-[#8e7456] italic">{font.styleDescription}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Font Size Slider */}
               <div>
                 <div className="flex items-center justify-between text-xs font-serif text-[#d6c2a8] mb-1">
-                  <span>Font Size (আকার)</span>
+                  <span>Font Size (লেখার আকার)</span>
                   <span className="text-[#c59b27] font-mono">{customState.style.fontSize}px</span>
                 </div>
                 <input
                   type="range"
-                  min="18"
+                  min="16"
                   max="44"
                   value={customState.style.fontSize}
                   onChange={(e) =>
@@ -1008,47 +1119,53 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
                 {/* Alignment */}
                 <div className="flex items-center gap-1 bg-[#221610] p-1 rounded-lg border border-[#c59b27]/20">
                   <button
+                    type="button"
                     onClick={() =>
                       setCustomState((prev) => ({
                         ...prev,
                         style: { ...prev.style, alignment: 'left' },
                       }))
                     }
-                    className={`p-1.5 rounded ${
+                    className={`p-1.5 rounded cursor-pointer ${
                       customState.style.alignment === 'left'
                         ? 'bg-[#c59b27] text-[#120d0a]'
                         : 'text-[#ab957c]'
                     }`}
+                    title="বামে সাজান"
                   >
                     <AlignLeft className="w-3.5 h-3.5" />
                   </button>
                   <button
+                    type="button"
                     onClick={() =>
                       setCustomState((prev) => ({
                         ...prev,
                         style: { ...prev.style, alignment: 'center' },
                       }))
                     }
-                    className={`p-1.5 rounded ${
+                    className={`p-1.5 rounded cursor-pointer ${
                       customState.style.alignment === 'center'
                         ? 'bg-[#c59b27] text-[#120d0a]'
                         : 'text-[#ab957c]'
                     }`}
+                    title="মাঝখানে সাজান"
                   >
                     <AlignCenter className="w-3.5 h-3.5" />
                   </button>
                   <button
+                    type="button"
                     onClick={() =>
                       setCustomState((prev) => ({
                         ...prev,
                         style: { ...prev.style, alignment: 'right' },
                       }))
                     }
-                    className={`p-1.5 rounded ${
+                    className={`p-1.5 rounded cursor-pointer ${
                       customState.style.alignment === 'right'
                         ? 'bg-[#c59b27] text-[#120d0a]'
                         : 'text-[#ab957c]'
                     }`}
+                    title="ডানে সাজান"
                   >
                     <AlignRight className="w-3.5 h-3.5" />
                   </button>
@@ -1057,28 +1174,32 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
                 {/* Bold & Italic */}
                 <div className="flex items-center gap-1 bg-[#221610] p-1 rounded-lg border border-[#c59b27]/20">
                   <button
+                    type="button"
                     onClick={() =>
                       setCustomState((prev) => ({
                         ...prev,
                         style: { ...prev.style, bold: !prev.style.bold },
                       }))
                     }
-                    className={`p-1.5 rounded ${
+                    className={`p-1.5 rounded cursor-pointer ${
                       customState.style.bold ? 'bg-[#c59b27] text-[#120d0a]' : 'text-[#ab957c]'
                     }`}
+                    title="বোল্ড"
                   >
                     <Bold className="w-3.5 h-3.5" />
                   </button>
                   <button
+                    type="button"
                     onClick={() =>
                       setCustomState((prev) => ({
                         ...prev,
                         style: { ...prev.style, italic: !prev.style.italic },
                       }))
                     }
-                    className={`p-1.5 rounded ${
+                    className={`p-1.5 rounded cursor-pointer ${
                       customState.style.italic ? 'bg-[#c59b27] text-[#120d0a]' : 'text-[#ab957c]'
                     }`}
+                    title="ইটালিক"
                   >
                     <Italic className="w-3.5 h-3.5" />
                   </button>
@@ -1089,13 +1210,14 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
                   {(['top', 'center', 'bottom'] as TextPosition[]).map((pos) => (
                     <button
                       key={pos}
+                      type="button"
                       onClick={() =>
                         setCustomState((prev) => ({
                           ...prev,
                           style: { ...prev.style, position: pos },
                         }))
                       }
-                      className={`px-2 py-1 rounded text-[10px] font-serif uppercase ${
+                      className={`px-2 py-1 rounded text-[10px] font-serif uppercase cursor-pointer ${
                         customState.style.position === pos
                           ? 'bg-[#c59b27] text-[#120d0a] font-bold'
                           : 'text-[#ab957c]'
@@ -1116,6 +1238,7 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
                   {inkColors.map((ink) => (
                     <button
                       key={ink.value}
+                      type="button"
                       onClick={() =>
                         setCustomState((prev) => ({
                           ...prev,
@@ -1271,6 +1394,13 @@ export const GeneratorPage: React.FC<GeneratorPageProps> = ({
         onClose={() => setIsSponsorGateOpen(false)}
         onConfirmDownload={handleConfirmedDownload}
         fileFormat={exportFormat}
+      />
+
+      {/* 10-Second Sponsor Gate Modal for Custom Photo Upload */}
+      <PhotoUploadSponsorModal
+        isOpen={isPhotoSponsorOpen}
+        onClose={() => setIsPhotoSponsorOpen(false)}
+        onComplete={handlePhotoSponsorComplete}
       />
     </div>
   );

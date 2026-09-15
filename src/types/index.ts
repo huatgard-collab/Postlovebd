@@ -8,7 +8,8 @@ export type FontFamilyChoice =
   | 'Typewriter'
   | 'Classic'
   | 'Handwritten'
-  | 'Old Newspaper';
+  | 'Old Newspaper'
+  | string;
 
 export type VintageBorder =
   | 'classic'
@@ -100,6 +101,7 @@ export interface PostcardCustomState {
   message: string; // মূল লেখা
   sender: string; // প্রেরক
   date: string; // তারিখ
+  selectedFont?: string; // e.g. 'elegant-serif' or 'romantic-bengali'
   style: TextStyleConfig;
   border: VintageBorder;
   effect: VintageEffectType;

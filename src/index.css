@@ -39,22 +39,54 @@
   font-family: 'Cinzel', 'Noto Serif Bengali', Georgia, serif;
 }
 .font-calligraphy {
-  font-family: 'Tiro Bangla', 'EB Garamond', cursive, serif;
+  font-family: 'Galada', 'Tiro Bangla', cursive, serif;
 }
 .font-bengali-elegant {
-  font-family: 'Anek Bangla', 'Noto Serif Bengali', sans-serif;
+  font-family: 'Noto Serif Bengali', 'Anek Bangla', serif;
 }
 .font-typewriter {
-  font-family: 'Special Elite', 'Courier New', monospace;
+  font-family: 'Special Elite', 'Noto Sans Bengali', monospace;
 }
 .font-classic {
-  font-family: 'EB Garamond', 'Noto Serif Bengali', serif;
+  font-family: 'Tiro Bangla', 'EB Garamond', serif;
 }
 .font-handwritten {
-  font-family: 'Great Vibes', 'Tiro Bangla', cursive;
+  font-family: 'Atma', cursive;
 }
 .font-old-newspaper {
-  font-family: 'Cinzel', 'Noto Serif Bengali', serif;
+  font-family: 'Noto Serif Bengali', 'Cinzel', serif;
+}
+
+/* Dedicated Bengali Unicode Font Classes */
+.font-bengali-serif {
+  font-family: 'Noto Serif Bengali', Georgia, serif;
+}
+.font-bengali-classic {
+  font-family: 'Tiro Bangla', 'Noto Serif Bengali', serif;
+}
+.font-bengali-handwritten {
+  font-family: 'Atma', cursive, sans-serif;
+}
+.font-bengali-romantic {
+  font-family: 'Baloo Da 2', cursive, sans-serif;
+}
+.font-bengali-calligraphy {
+  font-family: 'Galada', cursive, serif;
+}
+.font-bengali-vintage {
+  font-family: 'Noto Serif Bengali', Georgia, serif;
+}
+.font-bengali-modern {
+  font-family: 'Hind Siliguri', sans-serif;
+}
+.font-bengali-decorative {
+  font-family: 'Anek Bangla', sans-serif;
+}
+.font-bengali-traditional {
+  font-family: 'Mina', sans-serif;
+}
+.font-bengali-clean {
+  font-family: 'Noto Sans Bengali', sans-serif;
 }
 
 /* Parchment / Paper effect */

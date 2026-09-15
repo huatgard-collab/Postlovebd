@@ -14,6 +14,11 @@ export const exportPostcardImage = async ({
   scale = 2.5,
 }: ExportOptions): Promise<void> => {
   try {
+    // Ensure all web fonts are fully loaded before rendering
+    if (typeof document !== 'undefined' && 'fonts' in document) {
+      await document.fonts.ready;
+    }
+
     const canvas = await html2canvas(element, {
       scale: Math.min(scale, 3), // high resolution / HD
       useCORS: true,
