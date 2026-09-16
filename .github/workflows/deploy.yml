@@ -43,6 +43,14 @@ jobs:
       - name: Build application with Vite
         run: npm run build
 
+      - name: Verify static SEO files in build output
+        run: |
+          test -f ./dist/sitemap.xml || cp ./public/sitemap.xml ./dist/sitemap.xml
+          test -f ./dist/robots.txt || cp ./public/robots.txt ./dist/robots.txt
+          test -f ./dist/.nojekyll || touch ./dist/.nojekyll
+          echo "Verified dist contents:"
+          ls -la ./dist
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
